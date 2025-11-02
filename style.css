@@ -1,0 +1,43 @@
+/* ✅ ALWAYS LIGHT MODE — no dark mode at all */
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* ✅ Fix iPhone forced dark input UI */
+select, option, input, button, textarea {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Simple spacing & alignment */
+.order-card, .order-summary {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+/* Remove bullets */
+.order-list li {
+  list-style: none;
+  margin-bottom: 6px;
+}
+
+/* Buttons spacing */
+.actions > button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Section padding */
+#main-section {
+  padding: 12px;
+}
