@@ -1,43 +1,78 @@
-/* ✅ ALWAYS LIGHT MODE — no dark mode at all */
-:root {
-  color-scheme: light;
-}
+/* Force Light Mode (prevent iOS forced dark) */
+:root { color-scheme: light; }
+html, body { background: #ffffff !important; color: #000000 !important; }
 
-html, body {
-  background: #ffffff !important;
-  color: #000000 !important;
-}
-
-/* ✅ Fix iPhone forced dark input UI */
-select, option, input, button, textarea {
+/* Force form controls light and readable */
+select, option, input, textarea, button {
   background-color: #ffffff !important;
   color: #000000 !important;
   -webkit-appearance: none;
   appearance: none;
 }
 
-/* Simple spacing & alignment */
-.order-card, .order-summary {
-  background: #ffffff;
-  border: 1px solid #ddd;
+/* Layout */
+#main-section { padding: 8px; }
+
+/* Live summary box */
+.live-summary {
+  min-height: 42px;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  background: #ffffff;
 }
 
-/* Remove bullets */
-.order-list li {
-  list-style: none;
-  margin-bottom: 6px;
+/* Pesanan Keseluruhan box */
+.pesanan-box {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
 }
 
-/* Buttons spacing */
-.actions > button {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
+/* Individual order line */
+.order-line {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:space-between;
+  padding:6px 0;
+  border-bottom: 1px dashed #f1f5f9;
 }
 
-/* Section padding */
-#main-section {
-  padding: 12px;
+/* Buttons layout */
+.actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+.full-width { width:100%; }
+
+/* Hantar Pesanan button style (height of dropdown) */
+.hantar-btn {
+  height: 42px;
+  display:block;
+}
+
+/* small [+1] & [-] buttons */
+.dup-btn { min-width:56px; margin-right:6px; }
+.del-btn { min-width:56px; background:#ef4444; color:white; border-color:#ef4444; }
+
+/* prevent large labels — we use placeholders */
+label { display:none; }
+
+/* Total style at bottom of pesanan box */
+.pesanan-total {
+  margin-top:8px;
+  text-align:right;
+  font-weight:700;
+  text-decoration:underline;
+  color:#0369a1; /* bright blue */
+}
+
+/* responsive */
+@media (min-width:640px){
+  .grid-cols-2-md { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
 }
