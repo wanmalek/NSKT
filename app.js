@@ -51,25 +51,10 @@ function renderPage1(){
   const grid = document.createElement('div');
   grid.className = 'grid gap-3';
 
-  // Build selects in order required
-  // 1. Makan Atau Bungkus?
-  // 2. No. Meja (hidden unless Makan)
-  // 3. Jenis Kuey Tiaw
-  // 4. Variasi (display texts with prices)
-  // 5. Tambahan (no Ayam; display with + price)
-  // 6. Telur Mata? (Tiada / Telur Mata (+ RM 1.00))
-  // 7. Kepedasan
-
-  // 1 dine
   grid.appendChild(makeSelectWithPlaceholder('dine', 'Makan Atau Bungkus?', ['Makan','Bungkus']));
-
-  // 2 table
   grid.appendChild(makeSelectWithPlaceholder('table','No. Meja', Array.from({length:20},(_,i)=>String(i+1)), true));
-
-  // 3 jenis (placeholder exact)
   grid.appendChild(makeSelectWithPlaceholder('jenis','Jenis Kuey Tiaw',['Kuey Tiaw Basah','Kuey Tiaw Goreng']));
 
-  // 4 variasi — option text EXACT: "Ayam (RM 6.00)" etc, but values are plain keys
   const variasOptions = [
     { v: 'Ayam', text: 'Ayam (RM 6.00)' },
     { v: 'Daging', text: 'Daging (RM 7.00)' },
@@ -78,7 +63,6 @@ function renderPage1(){
   ];
   grid.appendChild(makeSelectCustom('variasi','Variasi Kuey Tiaw', variasOptions));
 
-  // 5 tambahan — NO Ayam — show exact texts
   const tambahanOptions = [
     { v: 'Tiada', text: 'Tiada' },
     { v: 'Daging', text: 'Daging (+ RM 2.00)' },
@@ -87,25 +71,21 @@ function renderPage1(){
   ];
   grid.appendChild(makeSelectCustom('tambahan','Tambahan', tambahanOptions));
 
-  // 6 telur mata?
   const telurOptions = [
     { v: 'Tiada', text: 'Tiada' },
     { v: 'Telur Mata', text: 'Telur Mata (+ RM 1.00)' }
   ];
   grid.appendChild(makeSelectCustom('telur','Telur Mata?', telurOptions));
 
-  // 7 kepedasan
   grid.appendChild(makeSelectWithPlaceholder('pedas','Kepedasan',['Biasa','Tahap 1','Tahap 2']));
 
   container.appendChild(grid);
 
-  // Live summary + plus button
   const liveWrap = document.createElement('div');
   liveWrap.className = 'live-summary mt-3';
 
   const liveText = document.createElement('div');
   liveText.className = 'live-text flex-1 text-sm text-gray-700';
-  liveText.textContent = '';
   liveWrap.appendChild(liveText);
 
   const plusBtn = document.createElement('button');
@@ -113,16 +93,15 @@ function renderPage1(){
   plusBtn.textContent = '+';
   plusBtn.onclick = () => {
     const summary = buildSummaryString(working);
-    if(!summary) return; // nothing meaningful
+    if(!summary) return;
     pesanan.push(cloneOrder(working));
     resetWorkingAndSelects();
-    renderPesananBox();
     liveText.textContent = '';
+    renderPesananBox();
   };
   liveWrap.appendChild(plusBtn);
   container.appendChild(liveWrap);
 
-  // Pesanan Keseluruhan label + box
   const label = document.createElement('div');
   label.className = 'mt-4 font-medium';
   label.textContent = 'Pesanan Keseluruhan';
@@ -133,7 +112,6 @@ function renderPage1(){
   pesananBox.id = 'pesanan-box';
   container.appendChild(pesananBox);
 
-  // Hantar Pesanan
   const hantar = document.createElement('button');
   hantar.className = 'btn btn-success full-width hantar-btn mt-3';
   hantar.textContent = 'Hantar Pesanan';
@@ -144,12 +122,15 @@ function renderPage1(){
   };
   container.appendChild(hantar);
 
+  /* ✅ Add Footer */
+  const footer = document.createElement('div');
+  footer.className = 'text-center text-xs text-gray-500 mt-6';
+  footer.textContent = '© 2025-2030 Izwan Malek. All Rights Reserved';
+  container.appendChild(footer);
+
   main.appendChild(container);
 
-  // attach change handlers after DOM appended
   attachSelectHandlers(liveText);
-
-  // initial render
   renderPesananBox();
 }
 
@@ -375,14 +356,73 @@ function renderPage2(){
     container.appendChild(div);
   });
 
-  // total line before order number
-  const total = calculateTotal();
+  const subtotal = calculateTotal();
+  const servis = 0.20;
+  const total = subtotal + servis;
+
+  const subtotalDiv = document.createElement('div');
+  subtotalDiv.className = 'order-card';
+  subtotalDiv.innerHTML = `<strong>Subtotal :</strong> RM ${subtotal.toFixed(2)}`;
+  container.appendChild(subtotalDiv);
+
+  const serviceDiv = document.createElement('div');
+  serviceDiv.className = 'order-card';
+  serviceDiv.innerHTML = `<strong>Cas Servis :</strong> RM ${servis.toFixed(2)}`;
+  container.appendChild(serviceDiv);
+
   const totalDiv = document.createElement('div');
-  totalDiv.className = 'order-card mt-3';
-  totalDiv.innerHTML = `<strong>Jumlah Bayaran Keseluruhan:</strong> RM ${total.toFixed(2)}`;
+  totalDiv.className = 'order-card mt-2 font-bold underline text-blue-700';
+  totalDiv.innerHTML = `<strong>Jumlah Bayaran Keseluruhan :</strong> RM ${total.toFixed(2)}`;
   container.appendChild(totalDiv);
 
-  // order number YYMMDD-HHMMSS-TT-NNN (TT = first Makan table or BB)
+  const payLabel = document.createElement('div');
+  payLabel.className = 'mt-5 font-semibold text-center';
+  payLabel.textContent = 'Bayaran';
+  container.appendChild(payLabel);
+
+  const qr = document.createElement('div');
+  qr.className = 'w-40 h-40 mx-auto mt-2 border border-gray-700 flex items-center justify-center';
+  qr.textContent = 'QR Code';
+  container.appendChild(qr);
+
+  const doneBtn = document.createElement('button');
+  doneBtn.className = 'btn btn-success full-width mt-5';
+  doneBtn.textContent = 'Selesai Bayaran';
+  doneBtn.onclick = () => renderPage3(subtotal, servis, total);
+  container.appendChild(doneBtn);
+
+  /* ✅ Footer */
+  const footer = document.createElement('div');
+  footer.className = 'text-center text-xs text-gray-500 mt-6';
+  footer.textContent = '© 2025-2030 Izwan Malek. All Rights Reserved';
+  container.appendChild(footer);
+
+  main.appendChild(container);
+}
+
+function renderPage3(subtotal, servis, total){
+  main.innerHTML = '';
+  const container = document.createElement('div');
+  container.className = 'text-center py-10';
+
+  const check = document.createElement('div');
+  check.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-green-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    </svg>`;
+  container.appendChild(check);
+
+  const doneText = document.createElement('div');
+  doneText.className = 'text-2xl font-bold mb-3';
+  doneText.textContent = 'Selesai!';
+  container.appendChild(doneText);
+
+  const note = document.createElement('div');
+  note.className = 'text-gray-800 mb-6';
+  note.textContent = 'Sila tunggu sehingga nombor anda dipanggil, terima kasih!';
+  container.appendChild(note);
+
+  /* Order Number */
   const d = new Date();
   const yy = String(d.getFullYear()).slice(2);
   const mm = String(d.getMonth()+1).padStart(2,'0');
@@ -394,12 +434,18 @@ function renderPage2(){
   const firstMakan = pesanan.find(p => p.dine === 'Makan');
   const TT = firstMakan && firstMakan.table ? firstMakan.table.padStart(2,'0') : 'BB';
   const NNN = String(sessionSendCounter).padStart(3,'0');
-
   const orderNo = `${yy}${mm}${dd}-${HH}${MM}${SS}-${TT}-${NNN}`;
+
   const numDiv = document.createElement('div');
-  numDiv.className = 'order-card mt-3';
+  numDiv.className = 'text-lg font-semibold mt-3';
   numDiv.innerHTML = `<strong>No. Pesanan:</strong> ${orderNo}`;
   container.appendChild(numDiv);
+
+  /* ✅ Footer */
+  const footer = document.createElement('div');
+  footer.className = 'text-center text-xs text-gray-500 mt-10';
+  footer.textContent = '© 2025-2030 Izwan Malek. All Rights Reserved';
+  container.appendChild(footer);
 
   main.appendChild(container);
 }
