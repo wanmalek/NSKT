@@ -48,12 +48,18 @@ function renderPage1(){
 
   const container = document.createElement('div');
 
+  // Add required field note
+  const requiredNote = document.createElement('div');
+  requiredNote.className = 'text-red-600 text-sm mb-3';
+  requiredNote.innerHTML = '<span class="font-bold">*</span> Required';
+  container.appendChild(requiredNote);
+
   const grid = document.createElement('div');
   grid.className = 'grid gap-3';
 
-  grid.appendChild(makeSelectWithPlaceholder('dine', 'Makan Atau Bungkus?', ['Makan','Bungkus']));
-  grid.appendChild(makeSelectWithPlaceholder('table','No. Meja', Array.from({length:20},(_,i)=>String(i+1)), true));
-  grid.appendChild(makeSelectWithPlaceholder('jenis','Jenis Kuey Tiaw',['Kuey Tiaw Basah','Kuey Tiaw Goreng']));
+  grid.appendChild(makeSelectWithPlaceholder('dine', 'Makan Atau Bungkus?', ['Makan','Bungkus'], false, true));
+  grid.appendChild(makeSelectWithPlaceholder('table','No. Meja', Array.from({length:20},(_,i)=>String(i+1)), true, true));
+  grid.appendChild(makeSelectWithPlaceholder('jenis','Jenis Kuey Tiaw',['Kuey Tiaw Basah','Kuey Tiaw Goreng'], false, true));
 
   const variasOptions = [
     { v: 'Ayam', text: 'Ayam (RM 6.00)' },
@@ -61,7 +67,7 @@ function renderPage1(){
     { v: 'Kerang', text: 'Kerang (RM 6.00)' },
     { v: 'Udang', text: 'Udang (RM 7.00)' }
   ];
-  grid.appendChild(makeSelectCustom('variasi','Variasi Kuey Tiaw', variasOptions));
+  grid.appendChild(makeSelectCustom('variasi','Variasi Kuey Tiaw', variasOptions, true));
 
   const tambahanOptions = [
     { v: 'Tiada', text: 'Tiada' },
@@ -77,7 +83,7 @@ function renderPage1(){
   ];
   grid.appendChild(makeSelectCustom('telur','Telur Mata?', telurOptions));
 
-  grid.appendChild(makeSelectWithPlaceholder('pedas','Kepedasan',['Biasa','Tahap 1','Tahap 2']));
+  grid.appendChild(makeSelectWithPlaceholder('pedas','Kepedasan',['Biasa','Tahap 1','Tahap 2'], false, true));
 
   container.appendChild(grid);
 
@@ -92,6 +98,69 @@ function renderPage1(){
   plusBtn.className = 'btn btn-primary';
   plusBtn.textContent = '+';
   plusBtn.onclick = () => {
+    // Check if all required fields are filled
+    const requiredFields = ['dine', 'jenis', 'variasi', 'pedas'];
+    const emptyFields = [];
+    
+    requiredFields.forEach(field => {
+      if(field === 'dine' && working.dine === 'Makan' && !working.table) {
+        emptyFields.push('table');
+      }
+      if(!working[field]) {
+        emptyFields.push(field);
+      }
+    });
+    
+    // If there are empty required fields, flash them and show error message
+    if(emptyFields.length > 0) {
+      // Get placeholder names for error message
+      const fieldNames = emptyFields.map(field => {
+        const select = document.querySelector(`select[data-key='${field}']`);
+        if(select) {
+          const placeholder = select.options[0].textContent;
+          return placeholder;
+        }
+        return field;
+      });
+      
+      // Show error message
+      const existingError = document.getElementById('error-message');
+      if(existingError) existingError.remove();
+      
+      const errorMsg = document.createElement('div');
+      errorMsg.id = 'error-message';
+      errorMsg.className = 'text-red-600 text-sm font-semibold mb-2';
+      errorMsg.textContent = `Please fill in the (${fieldNames.join(', ')}) field(s).`;
+      liveWrap.parentNode.insertBefore(errorMsg, liveWrap);
+      
+      // Flash the dropdowns
+      emptyFields.forEach(field => {
+        const select = document.querySelector(`select[data-key='${field}']`);
+        if(select && select.style.display !== 'none') {
+          select.classList.remove('flash-required');
+          void select.offsetWidth; // Trigger reflow to restart animation
+          select.classList.add('flash-required');
+          
+          // Remove animation class after it completes
+          setTimeout(() => {
+            select.classList.remove('flash-required');
+          }, 1500);
+        }
+      });
+      
+      // Remove error message after 4 seconds
+      setTimeout(() => {
+        if(errorMsg.parentNode) errorMsg.remove();
+      }, 4000);
+      
+      return; // Don't add to order
+    }
+    
+    // Clear any existing error message
+    const existingError = document.getElementById('error-message');
+    if(existingError) existingError.remove();
+    
+    // All required fields filled, proceed normally
     const summary = buildSummaryString(working);
     if(!summary) return;
     pesanan.push(cloneOrder(working));
@@ -135,11 +204,13 @@ function renderPage1(){
 }
 
 /* Helper to create select with placeholder. hideTable param determines initial hidden */
-function makeSelectWithPlaceholder(key, placeholder, items, hideTable=false){
+function makeSelectWithPlaceholder(key, placeholder, items, hideTable=false, isRequired=false){
   const wrap = document.createElement('div');
   const sel = document.createElement('select');
   sel.className = 'select select-bordered w-full';
   sel.dataset.key = key;
+  
+  if(isRequired) sel.classList.add('required-field');
 
   const ph = document.createElement('option');
   ph.value = '';
@@ -162,11 +233,13 @@ function makeSelectWithPlaceholder(key, placeholder, items, hideTable=false){
 }
 
 /* Helper for custom options where text != value */
-function makeSelectCustom(key, placeholder, options){
+function makeSelectCustom(key, placeholder, options, isRequired=false){
   const wrap = document.createElement('div');
   const sel = document.createElement('select');
   sel.className = 'select select-bordered w-full';
   sel.dataset.key = key;
+  
+  if(isRequired) sel.classList.add('required-field');
 
   const ph = document.createElement('option');
   ph.value = '';
