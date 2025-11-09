@@ -123,14 +123,28 @@ function renderPage1(){
         return field;
       });
       
+      // Build error message with proper formatting
+      let fieldText = '';
+      if(fieldNames.length === 1) {
+        fieldText = `<strong>${fieldNames[0]}</strong>`;
+      } else if(fieldNames.length === 2) {
+        fieldText = `<strong>${fieldNames[0]}</strong> & <strong>${fieldNames[1]}</strong>`;
+      } else {
+        const lastField = fieldNames[fieldNames.length - 1];
+        const otherFields = fieldNames.slice(0, -1);
+        fieldText = otherFields.map(f => `<strong>${f}</strong>`).join(', ') + ` & <strong>${lastField}</strong>`;
+      }
+      
+      const fieldWord = fieldNames.length === 1 ? 'field' : 'fields';
+      
       // Show error message
       const existingError = document.getElementById('error-message');
       if(existingError) existingError.remove();
       
       const errorMsg = document.createElement('div');
       errorMsg.id = 'error-message';
-      errorMsg.className = 'text-red-600 text-sm font-semibold mb-2';
-      errorMsg.textContent = `Please fill in the (${fieldNames.join(', ')}) field(s).`;
+      errorMsg.className = 'text-red-600 text-sm font-semibold my-3 text-center';
+      errorMsg.innerHTML = `Please fill in the ${fieldText} ${fieldWord}.`;
       liveWrap.parentNode.insertBefore(errorMsg, liveWrap);
       
       // Flash the dropdowns
