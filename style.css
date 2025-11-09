@@ -46,6 +46,12 @@ select, option, input, textarea, button {
   border-bottom: 1px dashed #f1f5f9;
 }
 
+.order-line > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* Buttons layout */
 .actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
 .full-width { width:100%; }
@@ -57,7 +63,7 @@ select, option, input, textarea, button {
 }
 
 /* small [+1] & [-] buttons */
-.dup-btn { min-width:56px; margin-right:6px; }
+.dup-btn { min-width:56px; }
 .del-btn { min-width:56px; background:#ef4444; color:white; border-color:#ef4444; }
 
 /* prevent large labels — we use placeholders */
