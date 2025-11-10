@@ -25,6 +25,7 @@ const main = document.getElementById('main-section');
 let working = getDefault();
 let pesanan = [];
 let sessionSendCounter = 0;
+let lastOrder = null; // Track last order for "Sama Seperti Sebelum"
 
 /* start */
 renderPage1();
@@ -178,9 +179,10 @@ function renderPage1(){
     const summary = buildSummaryString(working);
     if(!summary) return;
     pesanan.push(cloneOrder(working));
+    lastOrder = cloneOrder(working); // Save as last order for "Sama Seperti Sebelum"
     resetWorkingAndSelects();
     liveText.textContent = '';
-    renderPesananBox();
+    renderPage1(); // Re-render to show "Sama Seperti Sebelum" options
   };
   liveWrap.appendChild(plusBtn);
   container.appendChild(liveWrap);
@@ -233,6 +235,15 @@ function makeSelectWithPlaceholder(key, placeholder, items, hideTable=false, isR
   ph.textContent = placeholder;
   sel.appendChild(ph);
 
+  // Add "Sama Seperti Sebelum" if there's a last order and this field has a value
+  if(lastOrder && lastOrder[key]) {
+    const sameOpt = document.createElement('option');
+    sameOpt.value = '__SAME__';
+    sameOpt.textContent = 'Sama Seperti Sebelum';
+    sameOpt.dataset.actualValue = lastOrder[key];
+    sel.appendChild(sameOpt);
+  }
+
   items.forEach(it=>{
     const opt = document.createElement('option');
     opt.value = it;
@@ -262,6 +273,15 @@ function makeSelectCustom(key, placeholder, options, isRequired=false){
   ph.textContent = placeholder;
   sel.appendChild(ph);
 
+  // Add "Sama Seperti Sebelum" if there's a last order and this field has a value
+  if(lastOrder && lastOrder[key] && lastOrder[key] !== 'Tiada') {
+    const sameOpt = document.createElement('option');
+    sameOpt.value = '__SAME__';
+    sameOpt.textContent = 'Sama Seperti Sebelum';
+    sameOpt.dataset.actualValue = lastOrder[key];
+    sel.appendChild(sameOpt);
+  }
+
   options.forEach(op=>{
     const opt = document.createElement('option');
     opt.value = op.v;
@@ -290,11 +310,22 @@ function attachSelectHandlers(liveTextEl){
 
     s.onchange = () => {
       const k = s.dataset.key;
-      working[k] = s.value || working[k]; // if user selects placeholder (shouldn't), keep existing
+      
+      // Handle "Sama Seperti Sebelum" selection
+      if(s.value === '__SAME__') {
+        const selectedOption = s.options[s.selectedIndex];
+        const actualValue = selectedOption.dataset.actualValue;
+        working[k] = actualValue;
+        // Change dropdown to show actual value
+        s.value = actualValue;
+      } else {
+        working[k] = s.value || working[k]; // if user selects placeholder (shouldn't), keep existing
+      }
+      
       // show/hide table
       if(k === 'dine'){
         const tableSel = document.querySelector("select[data-key='table']");
-        if(s.value === 'Makan') tableSel.style.display = '';
+        if(working.dine === 'Makan') tableSel.style.display = '';
         else {
           tableSel.style.display = 'none';
           tableSel.value = '';
@@ -459,7 +490,7 @@ function renderPage2(){
 
   const totalDiv = document.createElement('div');
   totalDiv.className = 'order-card mt-2 font-bold underline text-blue-700';
-  totalDiv.innerHTML = `<strong>Jumlah Bayaran Keseluruhan :</strong> RM ${total.toFixed(2)}`;
+  totalDiv.innerHTML = `<strong>Jumlah Keseluruhan :</strong> RM ${total.toFixed(2)}`;
   container.appendChild(totalDiv);
 
   const payLabel = document.createElement('div');
