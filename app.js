@@ -336,12 +336,49 @@ function attachSelectHandlers(liveTextEl){
       if(k === 'tambahan' && !s.value) working.tambahan = 'Tiada';
       if(k === 'telur' && !s.value) working.telur = 'Tiada';
 
+      // If variasi changes, update tambahan dropdown to disable matching option
+      if(k === 'variasi') {
+        updateTambahanOptions();
+      }
+
       // live summary update if element provided
       if(liveTextEl){
         liveTextEl.textContent = buildSummaryString(working) || '';
       }
     };
   });
+  
+  // Initial update of tambahan options based on current variasi
+  updateTambahanOptions();
+}
+
+/* Update Tambahan dropdown to disable options that match Variasi selection */
+function updateTambahanOptions(){
+  const variasiSel = document.querySelector("select[data-key='variasi']");
+  const tambahanSel = document.querySelector("select[data-key='tambahan']");
+  
+  if(!variasiSel || !tambahanSel) return;
+  
+  const selectedVariasi = working.variasi;
+  
+  // Enable all options first
+  Array.from(tambahanSel.options).forEach(opt => {
+    opt.disabled = false;
+  });
+  
+  // Disable the matching option in Tambahan (except Tiada and placeholder)
+  if(selectedVariasi && selectedVariasi !== 'Ayam') {
+    Array.from(tambahanSel.options).forEach(opt => {
+      if(opt.value === selectedVariasi) {
+        opt.disabled = true;
+        // If currently selected tambahan matches variasi, reset it
+        if(working.tambahan === selectedVariasi) {
+          tambahanSel.value = '';
+          working.tambahan = 'Tiada';
+        }
+      }
+    });
+  }
 }
 
 /* Build summary string exactly as requested.
