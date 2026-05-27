@@ -343,7 +343,7 @@ function attachSelectHandlers(liveTextEl){
 
       // live summary update if element provided
       if(liveTextEl){
-        liveTextEl.textContent = buildSummaryString(working) || '';
+        liveTextEl.innerHTML = buildSummaryString(working) || '';
       }
     };
   });
@@ -381,11 +381,58 @@ function updateTambahanOptions(){
   }
 }
 
-/* Build summary string exactly as requested.
+/* Build summary HTML with colored tag boxes for each selection (Page 1 only).
+   Skip Tambahan/Telur if Tiada or empty.
+*/
+function buildSummaryString(o){
+  // if nothing selected meaningful yet return empty
+  if(!o.dine && !o.jenis && !o.variasi && !o.pedas) return '';
+
+  let html = '';
+  
+  // Dine type tag - #0c2d81
+  if(o.dine) {
+    html += `<span class="summary-tag" style="background-color: #0c2d81;">${o.dine}</span>, `;
+  }
+  
+  // Table tag - #03acf0 (only if Makan)
+  if(o.dine === 'Makan' && o.table) {
+    html += `<span class="summary-tag" style="background-color: #03acf0;">Meja ${o.table}</span> `;
+  }
+  
+  // Jenis tag - #849dcc
+  if(o.jenis) {
+    html += `<span class="summary-tag" style="background-color: #849dcc;">${o.jenis}</span> `;
+  }
+  
+  // Variasi tag - #ead84e
+  if(o.variasi) {
+    html += `<span class="summary-tag" style="background-color: #ead84e;">${o.variasi}</span> `;
+  }
+  
+  // Tambahan tag - #FF9900 (skip Tiada)
+  if(o.tambahan && o.tambahan !== 'Tiada') {
+    html += `<span class="summary-tag" style="background-color: #FF9900;">+ ${o.tambahan}</span> `;
+  }
+  
+  // Telur tag - #976037 (skip Tiada)
+  if(o.telur && o.telur !== 'Tiada') {
+    html += `<span class="summary-tag" style="background-color: #976037;">+ ${o.telur}</span> `;
+  }
+  
+  // Pedas tag - #607d8b
+  if(o.pedas) {
+    html += `<span class="summary-tag" style="background-color: #607d8b;">Pedas ${o.pedas}</span> `;
+  }
+  
+  return html.trim();
+}
+
+/* Build summary text without colored boxes (Page 2+).
    Skip Tambahan/Telur if Tiada or empty.
    Example: "Makan, Meja 20 - Kuey Tiaw Basah Ayam + Daging + Telur Mata, Pedas Tahap 1"
 */
-function buildSummaryString(o){
+function buildSummaryText(o){
   // if nothing selected meaningful yet return empty
   if(!o.dine && !o.jenis && !o.variasi && !o.pedas) return '';
 
@@ -507,7 +554,7 @@ function renderPage2(){
   pesanan.forEach((p, idx) => {
     const div = document.createElement('div');
     div.className = 'order-card mb-2';
-    div.innerHTML = `<strong>${idx+1})</strong> ${buildSummaryString(p)}`;
+    div.textContent = `${idx+1}) ${buildSummaryText(p)}`;
     container.appendChild(div);
   });
 
